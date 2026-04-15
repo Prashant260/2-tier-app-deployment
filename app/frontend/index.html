@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2-Tier App</title>
+</head>
+<body>
+
+<h2>send message</h2>
+
+<input type="text" id="msg" placeholder="Enter message">
+<button onclick="sendMessage()">Send</button>
+
+<p id="response"></p>
+
+<script>
+function sendMessage() {
+    console.log("Button clicked"); 
+
+    const message = document.getElementById("msg").value;
+
+    fetch('http://localhost:5000/api/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("response").innerText = data.response;
+    });
+}
+</script>
+
+</body>
+</html>
