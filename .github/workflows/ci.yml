@@ -69,6 +69,11 @@ jobs:
 
       - name: Snyk Code Test
         run: snyk test  
+        working-directory: ./app/backend
+      
+      - name: Snyk Test Frontend
+        run: snyk test
+        working-directory: ./app/frontend
 
       - name: Snyk Scan Backend Image
         run: snyk container test backend:latest
