@@ -69,11 +69,11 @@ jobs:
 
       - name: Snyk Test Backend
         run: snyk test --file=requirements.txt --package-manager=pip
-        working-directory: /app/backend
+        working-directory: app/backend
 
       - name: Snyk Test Frontend
         run: snyk test --file=requirements.txt --package-manager=pip
-        working-directory: /app/frontend
+        working-directory: app/frontend
 
       - name: Snyk Scan Backend Image
         run: snyk container test backend:latest
