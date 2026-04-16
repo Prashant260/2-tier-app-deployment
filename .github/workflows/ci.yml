@@ -86,16 +86,21 @@ jobs:
         run: snyk container test frontend:latest || true
    
       - name: push frontend
-        run: docker tag frontend:latest ${{ secrets.DOCKER_USERNAME }}/frontend:latest && docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+        run: |
+         docker tag frontend:latest ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+         docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
 
       - name: push backend
-        run: docker tag backend:latest ${{ secrets.DOCKER_USERNAME }}/backend:latest && docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+        run: |
+         docker tag backend:latest ${{ secrets.DOCKER_USERNAME }}/backend:latest 
+         docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
  
   infrastructure:
     needs: build
     name: Terraform
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: set up terraform
         uses: hashicorp/setup-terraform@v2
         with:
