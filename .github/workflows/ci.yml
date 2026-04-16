@@ -88,12 +88,12 @@ jobs:
       - name: push frontend
         run: |
          docker tag frontend:latest ${{ secrets.DOCKER_USERNAME }}/frontend:latest
-         docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+         docker push ${{secrets.DOCKER_USERNAME}}/frontend:latest
 
       - name: push backend
         run: |
          docker tag backend:latest ${{ secrets.DOCKER_USERNAME }}/backend:latest 
-         docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+         docker push ${{secrets.DOCKER_USERNAME}}/backend:latest
  
   infrastructure:
     needs: build
