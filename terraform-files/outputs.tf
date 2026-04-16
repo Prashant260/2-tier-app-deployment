@@ -16,4 +16,12 @@ output "internet_gateway_id" {
 output "route_table_id" {
     value = aws_route_table.public_rt.id
     }
-    
+output "aws_instance_id" {
+    value = aws_instance.web.id
+    }
+output "aws_instance_public_ip" {
+    value = aws_instance.web.public_ip
+    }
+output "aws_instance_private_ip" {
+    value = aws_instance.web.private_ip
+    }
