@@ -26,11 +26,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: build frontend
-        if: steps.frontend_changes.outputs.changed == 'true'
         run: docker build -t frontend:latest ./app/frontend
 
       - name: build backend
-        if: steps.backend_changes.outputs.changed == 'true'
         run: docker build -t backend:latest ./app/backend
 
       - name: Scan Backend Image (Trivy)
