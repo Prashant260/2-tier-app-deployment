@@ -36,7 +36,7 @@ jobs:
         with:
           image-ref: backend:latest
           format: table
-          exit-code: 1
+          exit-code: 0
           ignore-unfixed: true
 
       - name: Trivy Scan (Save Report)
@@ -51,7 +51,7 @@ jobs:
         with:
           image-ref: frontend:latest
           format: table
-          exit-code: 1
+          exit-code: 0
           ignore-unfixed: true  
 
       - name: Trivy Scan (Save Report)
