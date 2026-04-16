@@ -26,10 +26,12 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: build frontend
+        if: steps.frontend_changes.outputs.changed == 'true'
         run: docker build -t frontend:latest ./app/frontend
 
       - name: build backend
-        run: docker build -t backend:latest ./app/backend 
+        if: steps.backend_changes.outputs.changed == 'true'
+        run: docker build -t backend:latest ./app/backend
 
       - name: Scan Backend Image (Trivy)
         uses: aquasecurity/trivy-action@master
@@ -42,9 +44,9 @@ jobs:
       - name: Trivy Scan (Save Report)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: frontend:latest
+          image-ref: backend:latest
           format: json
-          output: trivy-reportfrontend.json    
+          output: trivy-reportbackend.json    
 
       - name: Scan Frontend Image (Trivy)
         uses: aquasecurity/trivy-action@master
