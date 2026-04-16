@@ -1,3 +1,11 @@
-FROM  nginx:latest
+FROM python:3.9-slim
 
-COPY index.html /usr/share/nginx/html/index.html
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+CMD ["python3", "app.py"]

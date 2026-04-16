@@ -77,31 +77,11 @@ resource "aws_route_table_association" "pri_subnet_association" {
   route_table_id = aws_route_table.private_rt.id
 }
 
-resource "aws_security_group" "sg" {
-  name        = "allow-ssh"
-  description = "Allow SSH inbound traffic"
-  vpc_id      = aws_vpc.new.id
+resource "aws_security_group" "frontend_sg" {
+  name   = "frontend-sg"
+  vpc_id = aws_vpc.new.id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_security_group" "sg2" {
-  name        = "allow-http"
-  description = "Allow HTTP inbound traffic"
-  vpc_id      = aws_vpc.new.id
-
+  # HTTP
   ingress {
     from_port   = 80
     to_port     = 80
@@ -109,6 +89,14 @@ resource "aws_security_group" "sg2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # SSH (restrict to your IP in real use)
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # ⚠️ change to your IP later
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -116,32 +104,38 @@ resource "aws_security_group" "sg2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
- 
- resource "aws_security_group" "sg3" {
-  name        = "allow-https"
-  description = "Allow HTTPS inbound traffic"
-  vpc_id      = aws_vpc.new.id
 
+resource "aws_security_group" "backend_sg" {
+  name   = "backend-sg"
+  vpc_id = aws_vpc.new.id
+
+  # Allow ONLY frontend to access backend
   ingress {
-    from_port   = 5000
-    to_port     = 5000
-    protocol    = "tcp"
-    security_groups = [aws_security_group.sg2.id]
+    from_port       = 5000
+    to_port         = 5000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.frontend_sg.id]
   }
 
-    egress {
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }   
- }
+ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.frontend_sg.id]
+  }
 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
  resource "aws_instance" "web_server" {
   ami           = "ami-05d2d839d4f73aafb"
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.pub_subnet.id
-  vpc_security_group_ids = [aws_security_group.sg.id, aws_security_group.sg2.id, aws_security_group.sg3.id]
+  vpc_security_group_ids = [aws_security_group.frontend_sg.id]
   key_name = "flask"
   tags = {
     Name = "web-server"
@@ -151,7 +145,7 @@ resource "aws_instance" "backend_server" {
   ami           = "ami-05d2d839d4f73aafb"
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.pri_subnet.id
-  vpc_security_group_ids = [aws_security_group.sg3.id]  
+  vpc_security_group_ids = [aws_security_group.backend_sg.id]  
     key_name = "flask"
   tags = {
     Name = "app-server"
