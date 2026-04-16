@@ -130,6 +130,7 @@ jobs:
         run: |
           echo "frontend_ip=$(terraform output -raw aws_instance_public_ip)" >> $GITHUB_OUTPUT
           echo "backend_ip=$(terraform output -raw aws_instance_private_ip)" >> $GITHUB_OUTPUT
+        working-directory: terraform-files
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
