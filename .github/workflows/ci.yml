@@ -1,19 +1,136 @@
 name: ci
 on: [push]
 jobs:
-  build:
+  sonarqube:
+    name: SonarQube
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flask requests
-    - name: Run backend tests
-      run: |
-        cd app/backend
-        python -m unittest discover -s tests
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  
+  build:
+    needs: sonarqube
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: docker login
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+    
+      - name: build frontend
+        run: docker build -t frontend:latest ./app/frontend 
+      
+      - name: build backend
+        run: docker build -t backend:latest ./app/backend  
+
+      - name: Scan Backend Image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: backend:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+
+      - name: Trivy Scan (Save Report)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: frontend:latest
+          format: json
+          output: trivy-reportfrontend.json    
+
+      - name: Scan Frontend Image (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: frontend:latest
+          format: table
+          exit-code: 1
+          ignore-unfixed: true  
+
+      - name: Trivy Scan (Save Report)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: frontend:latest
+          format: json
+          output: trivy-reportfrontend.json
+
+      - name: Install Snyk
+        run: npm install -g snyk
+    
+      - name: Authenticate Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Code Test
+        run: snyk test  
+
+      - name: Snyk Scan Backend Image
+        run: snyk container test backend:latest
+
+      - name: Snyk Scan Frontend Image
+        run: snyk container test frontend:latest
+   
+      - name: push frontend
+        run: docker tag frontend:latest ${{ secrets.DOCKER_USERNAME }}/frontend:latest && docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+
+      - name: push backend
+        run: docker tag backend:latest ${{ secrets.DOCKER_USERNAME }}/backend:latest && docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+ 
+  infrastructure:
+    needs: build
+    name: Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: set up terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: aws- configure
+        run : aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }} && aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }} && aws configure set default.region ap-south-1
+
+      - name: terraform init
+        run: terraform init
+    
+      - name: terraform validate
+        run: terraform validate
+    
+      - name: terraform plan
+        run: terraform plan -out=tfplan
+    
+      - name: terraform apply
+        run: terraform apply -auto-approve tfplan
+
+      - name: Get Terraform Outputs
+        id: tf_outputs
+        run: |
+          echo "frontend_ip=$(terraform output -raw aws_instance_public_ip)" >> $GITHUB_OUTPUT
+          echo "backend_ip=$(terraform output -raw aws_instance_private_ip)" >> $GITHUB_OUTPUT
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ steps.tf_outputs.outputs.frontend_ip }}   # public EC2
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+           echo "Connected to Frontend EC2"
+           echo "${{ secrets.EC2_SSH_KEY }}" > flask.pem
+           chmod 400 flask.pem
+
+           ssh -i flask.pem -o StrictHostKeyChecking=no ubuntu@${{ steps.tf_outputs.outputs.backend_ip }}
+           echo "Connected to Backend EC2"
+
+           docker pull ${{ secrets.DOCKER_USERNAME }}/backend:latest
+           docker stop backend || true
+           docker rm backend || true
+           docker run -d -p 5000:5000 --name backend ${{ secrets.DOCKER_USERNAME }}/backend:latest
+
+           EOF
+
+           docker pull ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+           docker stop frontend || true
+           docker rm frontend || true
+           docker run -d -p 80:80 --name frontend ${{ secrets.DOCKER_USERNAME }}/frontend:latest

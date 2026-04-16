@@ -137,6 +137,15 @@ ingress {
   subnet_id     = aws_subnet.pub_subnet.id
   vpc_security_group_ids = [aws_security_group.frontend_sg.id]
   key_name = "flask"
+  user_data = <<-EOF
+              #!/bin/bash
+              apt update -y
+              apt install docker.io -y
+              systemctl start docker
+              systemctl enable docker
+              usermod -aG docker ubuntu
+              chmod 666 /var/run/docker.sock
+              EOF
   tags = {
     Name = "web-server"
     }
@@ -147,6 +156,15 @@ resource "aws_instance" "backend_server" {
   subnet_id     = aws_subnet.pri_subnet.id
   vpc_security_group_ids = [aws_security_group.backend_sg.id]  
     key_name = "flask"
+    user_data = <<-EOF
+              #!/bin/bash
+              apt update -y
+              apt install docker.io -y
+              systemctl start docker
+              systemctl enable docker
+              usermod -aG docker ubuntu
+              chmod 666 /var/run/docker.sock
+              EOF
   tags = {
     Name = "app-server"
     }
