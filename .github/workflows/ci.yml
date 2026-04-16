@@ -111,15 +111,19 @@ jobs:
 
       - name: terraform init
         run: terraform init
+        working-directory: terraform-files
     
       - name: terraform validate
         run: terraform validate
+        working-directory: terraform-files
     
       - name: terraform plan
         run: terraform plan -out=tfplan
+        working-directory: terraform-files
     
       - name: terraform apply
         run: terraform apply -auto-approve tfplan
+        working-directory: terraform-files
 
       - name: Get Terraform Outputs
         id: tf_outputs
