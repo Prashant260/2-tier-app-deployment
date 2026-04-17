@@ -1,5 +1,12 @@
 name: ci
-on: [push]
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy (dev/staging/prod)'
+        required: true
+          
 jobs:
   sonarqube:
     name: SonarQube
