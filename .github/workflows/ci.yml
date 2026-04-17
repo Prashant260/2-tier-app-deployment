@@ -7,6 +7,7 @@ on:
         description: 'Environment to deploy (dev/staging/prod)'
         required: true
           
+
 jobs:
   sonarqube:
     name: SonarQube
@@ -113,9 +114,20 @@ jobs:
         with:
           terraform_wrapper: false
 
-      - name: aws- configure
-        run : aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }} && aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }} && aws configure set default.region ap-south-1
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ap-south-1
 
+      - name: Set Environment Config
+        run: |
+          if [ "$environment" = "stage" ]; then
+           echo INSTANCE_TYPE="c7i-medium" >> $GITHUB_ENV
+          else
+           echo INSTANCE_TYPE="t2.micro" >> $GITHUB_ENV
+          fi
+        
       - name: terraform init
         run: terraform init
         working-directory: terraform-files
@@ -125,11 +137,19 @@ jobs:
         working-directory: terraform-files
     
       - name: terraform plan
-        run: terraform plan -out=tfplan -lock=false
+        run: |
+          terraform plan \
+            -var="instance_type=${{ env.INSTANCE_TYPE }}" \
+            -var="environment=${{ env.ENVIRONMENT }}" \
+            -out=tfplan
         working-directory: terraform-files
     
       - name: terraform apply
-        run: terraform apply -auto-approve tfplan -lock=false
+        run: |
+          terraform apply \
+            -var="instance_type=${{ env.INSTANCE_TYPE }}" \
+            -var="environment=${{ env.ENVIRONMENT }}" \
+            -auto-approve tfplan
         working-directory: terraform-files
 
       - name: Get Terraform Outputs

@@ -133,7 +133,7 @@ ingress {
 }
  resource "aws_instance" "web_server" {
   ami           = "ami-05d2d839d4f73aafb"
-  instance_type = "t3.micro"
+  instance_type = var.instance_type
   subnet_id     = aws_subnet.pub_subnet.id
   vpc_security_group_ids = [aws_security_group.frontend_sg.id]
   key_name = "flask"
@@ -152,7 +152,7 @@ ingress {
  }
 resource "aws_instance" "backend_server" {
   ami           = "ami-05d2d839d4f73aafb"
-  instance_type = "t3.micro"
+  instance_type = var.instance_type
   subnet_id     = aws_subnet.pri_subnet.id
   vpc_security_group_ids = [aws_security_group.backend_sg.id]  
     key_name = "flask"
