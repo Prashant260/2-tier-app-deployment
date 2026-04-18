@@ -6,7 +6,10 @@ on:
       environment:
         description: 'Environment to deploy (dev/staging/prod)'
         required: true
-          
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   sonarqube:
@@ -107,9 +110,6 @@ jobs:
     needs: build
     name: Terraform
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: set up terraform
