@@ -113,12 +113,13 @@ jobs:
     steps:
 
       - uses: actions/checkout@v4
+
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::179832230574:role/oidc-3
           aws-region: ap-south-1
-          
+
       - name: Setup Terraform (for outputs)
         uses: hashicorp/setup-terraform@v2
 
@@ -126,14 +127,20 @@ jobs:
         run: terraform init
         working-directory: terraform-files
 
+      - name: Terraform Refresh State
+        run: terraform refresh
+        working-directory: terraform-files
+
       - name: Get Terraform Outputs
         id: tf_outputs
         run: |
-          FRONTEND_IP=$(terraform output -json frontend_ips | jq -r '.${{ matrix.environment }}')
-          BACKEND_IP=$(terraform output -json backend_ips | jq -r '.${{ matrix.environment }}')
+         ENV=${{ matrix.environment }}
 
-          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
-          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
+         FRONTEND_IP=$(terraform output -json frontend_ips | jq -r ".[$ENV]")
+         BACKEND_IP=$(terraform output -json backend_ips | jq -r ".[$ENV]")
+
+         echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT   
+         echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
         working-directory: terraform-files
 
       # -----------------------------
