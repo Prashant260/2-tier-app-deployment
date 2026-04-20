@@ -3,3 +3,8 @@ variable "instance_type" {
   type        = string
   default     = "t2.micro"
 }
+
+variable "environment" {
+  description = "Environment name (dev/staging/prod)"
+  type        = string
+}
