@@ -111,8 +111,14 @@ jobs:
         environment: [dev, staging]
 
     steps:
-      - uses: actions/checkout@v4
 
+      - uses: actions/checkout@v4
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::179832230574:role/oidc-3
+          aws-region: ap-south-1
+          
       - name: Setup Terraform (for outputs)
         uses: hashicorp/setup-terraform@v2
 
