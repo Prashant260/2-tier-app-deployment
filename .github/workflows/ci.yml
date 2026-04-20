@@ -182,6 +182,10 @@ jobs:
 
            ssh -i flask.pem -o StrictHostKeyChecking=no ubuntu@${{steps.tf_outputs.outputs.backend_ip}}
            echo "Connected to Backend EC2"
+           
+            sudo apt update -y
+            sudo apt install -y docker.io
+            sudo systemctl start docker
 
            docker pull ${{secrets.DOCKER_USERNAME }}/backend:latest
            docker stop backend || true
@@ -189,7 +193,9 @@ jobs:
            docker run -d -p 5000:5000 --name backend ${{secrets.DOCKER_USERNAME}}/backend:latest
 
            EOF
-
+             sudo apt update -y
+             sudo apt install -y docker.io
+             sudo systemctl start docker
            docker pull ${{secrets.DOCKER_USERNAME}}/frontend:latest
            docker stop frontend || true
            docker rm frontend || true
