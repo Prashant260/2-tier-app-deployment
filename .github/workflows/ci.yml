@@ -22,7 +22,7 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{secrets.SONAR_TOKEN}}
   
   build:
     name: Build and Push Docker Images
@@ -33,8 +33,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{secrets.DOCKER_USERNAME}}
+          password: ${{secrets.DOCKER_PASSWORD}}
 
       - name: build frontend
         run: docker build -t frontend:latest ./app/frontend
@@ -76,7 +76,7 @@ jobs:
         run: npm install -g snyk
     
       - name: Authenticate Snyk
-        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+        run: snyk auth ${{secrets.SNYK_TOKEN}}
 
       - name: Install Backend Dependencies
         run: pip install -r requirements.txt
@@ -98,12 +98,12 @@ jobs:
    
       - name: push frontend
         run: |
-         docker tag frontend:latest ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+         docker tag frontend:latest ${{secrets.DOCKER_USERNAME}}/frontend:latest
          docker push ${{secrets.DOCKER_USERNAME}}/frontend:latest
 
       - name: push backend
         run: |
-         docker tag backend:latest ${{ secrets.DOCKER_USERNAME }}/backend:latest 
+         docker tag backend:latest ${{secrets.DOCKER_USERNAME}}/backend:latest 
          docker push ${{secrets.DOCKER_USERNAME}}/backend:latest
  
   infrastructure:
@@ -112,8 +112,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set Environment Variable
-        run: echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+        run: echo "ENVIRONMENT=${{github.event.inputs.environment}}" >> $GITHUB_ENV
+
       - name: set up terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -130,8 +132,8 @@ jobs:
 
       - name: Set Environment Config
         run: |
-          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
-           echo INSTANCE_TYPE="c7i-medium" >> $GITHUB_ENV
+          if [ "${{github.event.inputs.environment}}" = "staging" ]; then
+           echo INSTANCE_TYPE="c7i-flex.large" >> $GITHUB_ENV
           else
            echo INSTANCE_TYPE="t2.micro" >> $GITHUB_ENV
           fi
@@ -147,16 +149,16 @@ jobs:
       - name: terraform plan
         run: |
           terraform plan \
-            -var="instance_type=${{ env.INSTANCE_TYPE }}" \
-            -var="environment=${{ env.ENVIRONMENT }}" \
+            -var="instance_type=${{env.INSTANCE_TYPE}}" \
+            -var="environment=${{env.ENVIRONMENT}}" \
             -out=tfplan
         working-directory: terraform-files
     
       - name: terraform apply
         run: |
           terraform apply \
-            -var="instance_type=${{ env.INSTANCE_TYPE }}" \
-            -var="environment=${{ env.ENVIRONMENT }}" \
+            -var="instance_type=${{env.INSTANCE_TYPE}}" \
+            -var="environment=${{env.ENVIRONMENT}}" \
             -auto-approve tfplan
         working-directory: terraform-files
 
@@ -170,25 +172,25 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ steps.tf_outputs.outputs.frontend_ip }}   # public EC2
+          host: ${{steps.tf_outputs.outputs.frontend_ip}}   # public EC2
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: ${{secrets.EC2_SSH_KEY}}
           script: |
            echo "Connected to Frontend EC2"
-           echo "${{ secrets.EC2_SSH_KEY }}" > flask.pem
+           echo "${{secrets.EC2_SSH_KEY}}" > flask.pem
            chmod 400 flask.pem
 
-           ssh -i flask.pem -o StrictHostKeyChecking=no ubuntu@${{ steps.tf_outputs.outputs.backend_ip }}
+           ssh -i flask.pem -o StrictHostKeyChecking=no ubuntu@${{steps.tf_outputs.outputs.backend_ip}}
            echo "Connected to Backend EC2"
 
-           docker pull ${{ secrets.DOCKER_USERNAME }}/backend:latest
+           docker pull ${{secrets.DOCKER_USERNAME }}/backend:latest
            docker stop backend || true
            docker rm backend || true
-           docker run -d -p 5000:5000 --name backend ${{ secrets.DOCKER_USERNAME }}/backend:latest
+           docker run -d -p 5000:5000 --name backend ${{secrets.DOCKER_USERNAME}}/backend:latest
 
            EOF
 
-           docker pull ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+           docker pull ${{secrets.DOCKER_USERNAME}}/frontend:latest
            docker stop frontend || true
            docker rm frontend || true
-           docker run -d -p 80:80 --name frontend ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+           docker run -d -p 80:80 --name frontend ${{secrets.DOCKER_USERNAME}}/frontend:latest
