@@ -122,7 +122,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::179832230574:role/oidc-2
+          role-to-assume: arn:aws:iam::179832230574:role/oidc-3 
           aws-region: ap-south-1
       
       - name: verify AWS Identity
