@@ -112,6 +112,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set Environment Variable
+        run: echo "ENVIRONMENT=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
       - name: set up terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -120,12 +122,12 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::179832230574:role/OIDC-role
+          role-to-assume: arn:aws:iam::179832230574:role/oidc-2
           aws-region: ap-south-1
 
       - name: Set Environment Config
         run: |
-          if [ "$environment" = "stage" ]; then
+          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
            echo INSTANCE_TYPE="c7i-medium" >> $GITHUB_ENV
           else
            echo INSTANCE_TYPE="t2.micro" >> $GITHUB_ENV
