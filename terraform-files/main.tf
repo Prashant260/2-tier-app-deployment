@@ -131,6 +131,7 @@ ingress {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
  resource "aws_instance" "web_server" {
   for_each = var.environments
 
@@ -154,7 +155,7 @@ ingress {
 }
 resource "aws_instance" "backend_server" {
   for_each = var.environments
-  
+
   ami           = "ami-05d2d839d4f73aafb"
   instance_type = each.value.instance_type
   subnet_id     = aws_subnet.pri_subnet.id

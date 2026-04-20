@@ -1,13 +1,12 @@
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t2.micro"
 }
 
-variable "environment" {
+variable "environments" {
   default = {
     dev = {
-      instance_type = "t2.small"
+      instance_type = "t2.micro"
     }
     staging = {
       instance_type = "c7i-flex.large"

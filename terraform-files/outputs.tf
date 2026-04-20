@@ -16,9 +16,17 @@ output "internet_gateway_id" {
 output "route_table_id" {
     value = aws_route_table.public_rt.id
     }
-output "aws_instance_public_ip" {
-    value = aws_instance.web_server.public_ip
-    }
-output "aws_instance_private_ip" {
-    value = aws_instance.backend_server.private_ip
-    }
+
+output "frontend_ips" {
+  value = {
+    for k, v in aws_instance.web_server :
+    k => v.public_ip
+  }
+}
+
+output "backend_ips" {
+  value = {
+    for k, v in aws_instance.backend_server :
+    k => v.private_ip
+  }
+}
