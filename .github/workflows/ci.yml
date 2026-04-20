@@ -124,6 +124,9 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::179832230574:role/oidc-2
           aws-region: ap-south-1
+      
+      - name: verify AWS Identity
+        run: aws sts get-caller-identity    
 
       - name: Set Environment Config
         run: |
