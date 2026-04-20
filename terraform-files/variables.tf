@@ -5,6 +5,14 @@ variable "instance_type" {
 }
 
 variable "environment" {
-  description = "Environment name (dev/staging/prod)"
-  type        = string
+  default = {
+    dev = {
+      instance_type = "t2.small"
+    }
+    staging = {
+      instance_type = "c7i-flex.large"
+          }
+
+  }
+
 }

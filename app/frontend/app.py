@@ -1,9 +1,10 @@
 from flask import Flask, render_template
 import requests
+import os
 
 app = Flask(__name__)
 
-BACKEND_URL = "http://localhost:5000/api/data"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5000/api/data")
 
 @app.route('/')
 def home():

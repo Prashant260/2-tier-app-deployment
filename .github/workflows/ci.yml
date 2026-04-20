@@ -169,34 +169,38 @@ jobs:
           echo "backend_ip=$(terraform output -raw aws_instance_private_ip)" >> $GITHUB_OUTPUT
         working-directory: terraform-files
 
-      - name: Deploy to EC2
+      - name: Deploy Backend via Bastion
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{steps.tf_outputs.outputs.frontend_ip}}   # public EC2
+          host: ${{steps.tf_outputs.outputs.backend_ip}}
+          username: ubuntu
+          key: ${{secrets.EC2_SSH_KEY}}
+
+          proxy_host: ${{steps.tf_outputs.outputs.frontend_ip}}
+          proxy_username: ubuntu
+          proxy_key: ${{secrets.EC2_SSH_KEY}}
+
+          script: |
+           sudo systemctl start docker
+
+           sudo docker pull ${{secrets.DOCKER_USERNAME}}/backend:latest
+           sudo docker stop backend || true
+           sudo docker rm backend || true
+           sudo docker run -d -p 5000:5000 --name backend ${{secrets.DOCKER_USERNAME}}/backend:latest
+          
+      - name: Deploy Frontend
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{steps.tf_outputs.outputs.frontend_ip}}
           username: ubuntu
           key: ${{secrets.EC2_SSH_KEY}}
           script: |
-           echo "Connected to Frontend EC2"
-           echo "${{secrets.EC2_SSH_KEY}}" > flask.pem
-           chmod 400 flask.pem
-
-           ssh -i flask.pem -o StrictHostKeyChecking=no ubuntu@${{steps.tf_outputs.outputs.backend_ip}}
-           echo "Connected to Backend EC2"
-           
-            sudo apt update -y
-            sudo apt install -y docker.io
-            sudo systemctl start docker
-
-           docker pull ${{secrets.DOCKER_USERNAME }}/backend:latest
-           docker stop backend || true
-           docker rm backend || true
-           docker run -d -p 5000:5000 --name backend ${{secrets.DOCKER_USERNAME}}/backend:latest
-
-           EOF
-             sudo apt update -y
-             sudo apt install -y docker.io
-             sudo systemctl start docker
+           sudo systemctl start docker     
+           sudo systemctl start docker || true
            docker pull ${{secrets.DOCKER_USERNAME}}/frontend:latest
            docker stop frontend || true
            docker rm frontend || true
-           docker run -d -p 80:80 --name frontend ${{secrets.DOCKER_USERNAME}}/frontend:latest
+           docker run -d -p 80:80 \
+           -e BACKEND_URL=http://${{steps.tf_outputs.outputs.backend_ip}}:5000 \
+           --name frontend \
+            ${{secrets.DOCKER_USERNAME}}/frontend:latest

@@ -132,8 +132,10 @@ ingress {
   }
 }
  resource "aws_instance" "web_server" {
+  for_each = var.environments
+
   ami           = "ami-05d2d839d4f73aafb"
-  instance_type = var.instance_type
+  instance_type = each.value.instance_type
   subnet_id     = aws_subnet.pub_subnet.id
   vpc_security_group_ids = [aws_security_group.frontend_sg.id]
   key_name = "flask"
@@ -147,12 +149,14 @@ ingress {
               chmod 666 /var/run/docker.sock
               EOF
   tags = {
-    Name = "web-server"
-    }
- }
+    Name = "web-server-${each.key}"
+  }
+}
 resource "aws_instance" "backend_server" {
+  for_each = var.environments
+  
   ami           = "ami-05d2d839d4f73aafb"
-  instance_type = var.instance_type
+  instance_type = each.value.instance_type
   subnet_id     = aws_subnet.pri_subnet.id
   vpc_security_group_ids = [aws_security_group.backend_sg.id]  
     key_name = "flask"
@@ -166,6 +170,6 @@ resource "aws_instance" "backend_server" {
               chmod 666 /var/run/docker.sock
               EOF
   tags = {
-    Name = "app-server"
+    Name = "app-server-${each.key}"
     }
   }
