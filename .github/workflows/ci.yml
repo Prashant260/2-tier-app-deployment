@@ -105,9 +105,7 @@ jobs:
     strategy:
       matrix:
         environment: [dev, staging]
-    env:
-      TF_VAR_env: ${{ matrix.environment }}
-
+   
     steps:
 
       - uses: actions/checkout@v4
@@ -120,12 +118,17 @@ jobs:
 
       - name: Setup Terraform (for outputs)
         uses: hashicorp/setup-terraform@v2
+      - name: Select Backend
+        run: |
+         if [ "${{ matrix.environment }}" = "dev" ]; then
+          cp backend-dev.tf backend.tf
+         else
+          cp backend-stage.tf backend.tf
+         fi
+        working-directory: terraform-files
 
       - name: Terraform Init
-        run: |
-         terraform init \
-         -backend-config="key=two-tier-app/${{ matrix.environment }}/terraform.tfstate" \
-         -reconfigure
+        run: terraform init -reconfigure
         working-directory: terraform-files
 
       - name: Get Terraform Outputs
@@ -133,10 +136,10 @@ jobs:
         run: |
          ENV=${{ matrix.environment }}
 
-         FRONTEND_IP=$(terraform output -json frontend_ips | jq -r ".value.${ENV}")
-         BACKEND_IP=$(terraform output -json backend_ips | jq -r ".value.${ENV}")
+         FRONTEND_IP=$(terraform output -json frontend_ips | jq -r ".${ENV}")
+         BACKEND_IP=$(terraform output -json backend_ips | jq -r ".${ENV}")
 
-         echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT   
+         echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT    
          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
         working-directory: terraform-files
 
