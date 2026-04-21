@@ -144,13 +144,14 @@ jobs:
         run: terraform init -backend-config="key=${{ matrix.environment }}/terraform.tfstate" -reconfigure
         working-directory: terraform-files/compute
 
-      - name: Get Outputs (Robust)
+      - name: Get Outputs (Safe Final)
         id: tf_outputs
         run: |
-          FRONTEND_IP=$(terraform output frontend_ip | tr -d '"' | awk '{print $3}')
-          BACKEND_IP=$(terraform output backend_ip | tr -d '"' | awk '{print $3}')
-          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT  
-          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT 
+         FRONTEND_IP=$(terraform output -raw frontend_ip | sed 's/[^0-9\.]*//g')
+         BACKEND_IP=$(terraform output -raw backend_ip | sed 's/[^0-9\.]*//g')
+
+         echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
+         echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
         working-directory: terraform-files/compute
 
       # -----------------------------
