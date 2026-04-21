@@ -126,7 +126,7 @@ jobs:
          terraform init \
          -backend-config="key=two-tier-app/${{ matrix.environment }}/terraform.tfstate" \
          -reconfigure
-       working-directory: terraform-files
+        working-directory: terraform-files
 
       - name: Get Terraform Outputs
         id: tf_outputs
