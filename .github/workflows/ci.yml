@@ -147,11 +147,8 @@ jobs:
       - name: Get Outputs (Safe Final)
         id: tf_outputs
         run: |
-         FRONTEND_IP=$(terraform output -raw frontend_ip | sed 's/[^0-9\.]*//g')
-         BACKEND_IP=$(terraform output -raw backend_ip | sed 's/[^0-9\.]*//g')
-
-         echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
-         echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
+          echo "frontend_ip=$(terraform output -raw aws_instance_public_ip)" >> $GITHUB_OUTPUT
+          echo "backend_ip=$(terraform output -raw aws_instance_private_ip)" >> $GITHUB_OUTPUT
         working-directory: terraform-files/compute
 
       # -----------------------------
