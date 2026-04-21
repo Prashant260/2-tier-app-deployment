@@ -91,7 +91,7 @@ jobs:
         working-directory: terraform-files
     
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve
         working-directory: terraform-files
 
   # -----------------------------
