@@ -129,6 +129,7 @@ jobs:
     strategy:
       matrix:
         environment: [dev, staging]
+      max-parallel: 1 
 
     steps:
       - uses: actions/checkout@v4
