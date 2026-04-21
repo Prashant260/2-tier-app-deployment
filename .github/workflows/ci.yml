@@ -142,9 +142,7 @@ jobs:
           aws-region: ap-south-1
 
       - name: Terraform Init
-        run: terraform init \
-          -backend-config="key=${{ matrix.environment }}/terraform.tfstate" \
-          -reconfigure
+        run: terraform init -backend-config="key=${{ matrix.environment }}/terraform.tfstate" -reconfigure
         working-directory: terraform-files/compute
 
       - name: Get Outputs
