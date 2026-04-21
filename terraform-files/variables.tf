@@ -8,3 +8,11 @@ variable "environments" {
     }
   }
 }
+
+variable "env" {
+  description = "The environment to deploy (dev or staging)"
+  type = string
+  validation {
+    condition     = var.env == "dev" || var.env == "staging"
+      }
+}
