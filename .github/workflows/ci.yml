@@ -76,9 +76,7 @@ jobs:
           aws-region: ap-south-1
 
       - name: Terraform Init (CORE)
-        run: terraform init \
-          -backend-config="key=core/terraform.tfstate" \
-          -reconfigure
+        run: terraform init -backend-config="key=core/terraform.tfstate" -reconfigure
         working-directory: terraform-files/core
 
       - name: Terraform Apply (CORE)
@@ -109,7 +107,7 @@ jobs:
           aws-region: ap-south-1
 
       - name: Terraform Init (ENV)
-        run: terraform init \
+        run: terraform init 
           -backend-config="key=${{ matrix.environment }}/terraform.tfstate" \
           -reconfigure
         working-directory: terraform-files/compute
