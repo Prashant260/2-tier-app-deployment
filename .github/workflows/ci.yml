@@ -94,7 +94,7 @@ jobs:
     strategy:
       matrix:
         environment: [dev, staging]
-
+      max-parallel: 1 
     steps:
       - uses: actions/checkout@v4
 
@@ -127,7 +127,7 @@ jobs:
     strategy:
       matrix:
         environment: [dev, staging]
-      max-parallel: 1 
+      
 
     steps:
       - uses: actions/checkout@v4
@@ -144,14 +144,14 @@ jobs:
         run: terraform init -backend-config="key=${{ matrix.environment }}/terraform.tfstate" -reconfigure
         working-directory: terraform-files/compute
 
-      - name: Get Outputs
+      - name: Get Outputs (Robust)
         id: tf_outputs
         run: |
-          FRONTEND_IP=$(terraform output -raw frontend_ip)
-          BACKEND_IP=$(terraform output -raw backend_ip)
+         FRONTEND_IP=$(terraform output -json | jq -r '.frontend_ip.value')
+         BACKEND_IP=$(terraform output -json | jq -r '.backend_ip.value')
 
-          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
-          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
+         echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT  
+         echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT 
         working-directory: terraform-files/compute
 
       # -----------------------------
