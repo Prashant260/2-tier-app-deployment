@@ -147,11 +147,10 @@ jobs:
       - name: Get Outputs (Robust)
         id: tf_outputs
         run: |
-         FRONTEND_IP=$(terraform output -json | jq -r '.frontend_ip.value')
-         BACKEND_IP=$(terraform output -json | jq -r '.backend_ip.value')
-
-         echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT  
-         echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT 
+          FRONTEND_IP=$(terraform output frontend_ip | tr -d '"' | awk '{print $3}')
+          BACKEND_IP=$(terraform output backend_ip | tr -d '"' | awk '{print $3}')
+          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT  
+          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT 
         working-directory: terraform-files/compute
 
       # -----------------------------
