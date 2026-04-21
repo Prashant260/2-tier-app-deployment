@@ -121,9 +121,12 @@ jobs:
       - name: Setup Terraform (for outputs)
         uses: hashicorp/setup-terraform@v2
 
-      - name: Terraform Init (for outputs)
-        run: terraform init -reconfigure
-        working-directory: terraform-files
+      - name: Terraform Init
+        run: |
+         terraform init \
+         -backend-config="key=two-tier-app/${{ matrix.environment }}/terraform.tfstate" \
+         -reconfigure
+       working-directory: terraform-files
 
       - name: Get Terraform Outputs
         id: tf_outputs
