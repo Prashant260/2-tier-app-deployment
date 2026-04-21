@@ -147,8 +147,10 @@ jobs:
       - name: Get Outputs (Safe Final)
         id: tf_outputs
         run: |
-          echo "frontend_ip=$(terraform output -raw aws_instance_public_ip)" >> $GITHUB_OUTPUT
-          echo "backend_ip=$(terraform output -raw aws_instance_private_ip)" >> $GITHUB_OUTPUT
+          FRONTEND_IP=$(terraform output -raw frontend_ip)
+          BACKEND_IP=$(terraform output -raw backend_ip)
+          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
+          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
         working-directory: terraform-files/compute
 
       # -----------------------------
