@@ -1,6 +1,6 @@
 output "vpc_id" {
-    value = aws_vpc.new.id
-    }
+  value = aws_vpc.new.id
+}
 
 output "public_subnet_id" {
     value = aws_subnet.pub_subnet.id
@@ -17,16 +17,3 @@ output "route_table_id" {
     value = aws_route_table.public_rt.id
     }
 
-output "frontend_ips" {
-  value = {
-    for k, v in aws_instance.web_server :
-    k => v.public_ip
-  }
-}
-
-output "backend_ips" {
-  value = {
-    for k, v in aws_instance.backend_server :
-    k => v.private_ip
-  }
-}
