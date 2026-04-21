@@ -147,9 +147,9 @@ jobs:
       - name: Get Outputs (Safe Final)
         id: tf_outputs
         run: |
-            echo "frontend_ip=$(terraform output -raw frontend_ip | tr -d '\n')" >> $GITHUB_OUTPUT
-            echo "backend_ip=$(terraform output -raw backend_ip | tr -d '\n')" >> $GITHUB_OUTPUT
-       working-directory: terraform-files/compute
+          echo "frontend_ip=$(terraform output -raw frontend_ip | tr -d '\n')" >> $GITHUB_OUTPUT
+          echo "backend_ip=$(terraform output -raw backend_ip | tr -d '\n')" >> $GITHUB_OUTPUT
+        working-directory: terraform-files/compute
 
       # -----------------------------
       # BACKEND DEPLOY (via bastion)
