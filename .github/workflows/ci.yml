@@ -115,6 +115,16 @@ jobs:
         working-directory: terraform-files/compute
         env:
           TF_VAR_environment: ${{ matrix.environment }}
+      
+      - name: Get Outputs (CLEAN - SOURCE OF TRUTH)
+        id: tf_outputs
+        run: |
+          FRONTEND_IP=$(terraform output -raw frontend_ip)
+          BACKEND_IP=$(terraform output -raw backend_ip)
+
+          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
+          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
+        working-directory: terraform-files/compute   
 
 # -----------------------------
 # 4. DEPLOY (MATRIX)
@@ -140,27 +150,28 @@ jobs:
           role-to-assume: arn:aws:iam::179832230574:role/oidc-3
           aws-region: ap-south-1
 
-      - name: Terraform Init
-        run: terraform init -backend-config="key=${{ matrix.environment }}/terraform.tfstate" -reconfigure
-        working-directory: terraform-files/compute
+      # - name: Terraform Init
+      #   run: terraform init -backend-config="key=${{ matrix.environment }}/terraform.tfstate" -reconfigure
+      #   working-directory: terraform-files/compute
 
-      - name: Get Outputs (Sanitized Final)
-        id: tf_outputs
-        run: |
-          FRONTEND_IP=$(terraform output -raw frontend_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-          BACKEND_IP=$(terraform output -raw backend_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+      # - name: Get Outputs (Sanitized Final)
+      #   id: tf_outputs
+      #   run: |
 
-          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
-          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
+      #     FRONTEND_IP=$(terraform output -raw frontend_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+      #     BACKEND_IP=$(terraform output -raw backend_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
 
-          echo "frontend_ip=$FRONTEND_IP" 
-          echo "backend_ip=$BACKEND_IP"
-        working-directory: terraform-files/compute
+      #     echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
+      #     echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
 
-      - name: Debug Outputs
-        run: |
-         echo -e "Frontend IP: \n" "${{ steps.tf_outputs.outputs.frontend_ip }}"
-         echo -e "Backend IP: \n" "${{ steps.tf_outputs.outputs.backend_ip }}"
+      #     echo "frontend_ip=$FRONTEND_IP" 
+      #     echo "backend_ip=$BACKEND_IP"
+      #   working-directory: terraform-files/compute
+
+      # - name: Debug Outputs
+      #   run: |
+      #    echo -e "Frontend IP: \n" "${{ steps.tf_outputs.outputs.frontend_ip }}"
+      #    echo -e "Backend IP: \n" "${{ steps.tf_outputs.outputs.backend_ip }}"
 
       # -----------------------------
       # BACKEND DEPLOY (via bastion)
