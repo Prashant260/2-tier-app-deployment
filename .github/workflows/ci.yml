@@ -147,8 +147,8 @@ jobs:
       - name: Get Outputs (Clean & Safe)
         id: tf_outputs
         run: |
-          FRONTEND_IP=$(terraform output -raw frontend_ip | tail -n 1 | tr -d '\r\n')
-          BACKEND_IP=$(terraform output -raw backend_ip | tail -n 1 | tr -d '\r\n')
+          FRONTEND_IP=$(terraform output -raw frontend_ip 2>/dev/null)
+          BACKEND_IP=$(terraform output -raw backend_ip 2>/dev/null)
 
           echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
           echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
