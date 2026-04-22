@@ -151,6 +151,11 @@ jobs:
           echo "backend_ip=$(terraform output -raw backend_ip | tr -d '\n')" >> $GITHUB_OUTPUT
         working-directory: terraform-files/compute
 
+      - name: Debug Outputs
+        run: |
+         echo "Frontend: ${{ steps.tf_outputs.outputs.frontend_ip }}"
+         echo "Backend: ${{ steps.tf_outputs.outputs.backend_ip }}"
+
       # -----------------------------
       # BACKEND DEPLOY (via bastion)
       # -----------------------------
