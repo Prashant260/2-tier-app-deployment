@@ -150,6 +150,9 @@ jobs:
           FRONTEND_IP=$(terraform output -raw frontend_ip 2>/dev/null)
           BACKEND_IP=$(terraform output -raw backend_ip 2>/dev/null)
 
+          echo "frontend_ip=$FRONTEND_IP" 
+          echo "backend_ip=$BACKEND_IP" 
+
           echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
           echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
         working-directory: terraform-files/compute
