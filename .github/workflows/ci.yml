@@ -144,17 +144,20 @@ jobs:
         run: terraform init -backend-config="key=${{ matrix.environment }}/terraform.tfstate" -reconfigure
         working-directory: terraform-files/compute
 
-      - name: Get Outputs (Safe Final)
+      - name: Get Outputs (Clean & Safe)
         id: tf_outputs
         run: |
-          echo "frontend_ip=$(terraform output -raw frontend_ip | tr -d '\n')" >> $GITHUB_OUTPUT
-          echo "backend_ip=$(terraform output -raw backend_ip | tr -d '\n')" >> $GITHUB_OUTPUT
+          FRONTEND_IP=$(terraform output -raw frontend_ip | tail -n 1 | tr -d '\r\n')
+          BACKEND_IP=$(terraform output -raw backend_ip | tail -n 1 | tr -d '\r\n')
+
+          echo "frontend_ip=$FRONTEND_IP" >> $GITHUB_OUTPUT
+          echo "backend_ip=$BACKEND_IP" >> $GITHUB_OUTPUT
         working-directory: terraform-files/compute
 
       - name: Debug Outputs
         run: |
-         echo "Frontend: ${{ steps.tf_outputs.outputs.frontend_ip }}"
-         echo "Backend: ${{ steps.tf_outputs.outputs.backend_ip }}"
+         echo -e "Frontend IP: \n" "${{ steps.tf_outputs.outputs.frontend_ip }}"
+         echo -e "Backend IP: \n" "${{ steps.tf_outputs.outputs.backend_ip }}"
 
       # -----------------------------
       # BACKEND DEPLOY (via bastion)
